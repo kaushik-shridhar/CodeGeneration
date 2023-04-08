@@ -1,0 +1,194 @@
+import os
+import numpy as np
+import cv2
+import sys
+sys.path.append("C:\\Users\\shrid\\Desktop\\demo\\sketch-code\\src\\")
+from classes.inference.Sampler import *
+
+def generate_html(img):
+    print(str(img))
+    img_path = cv2.imdecode(np.frombuffer(img.read() , np.uint8), cv2.IMREAD_UNCHANGED)
+    cv2.imwrite("C:\\Users\\shrid\\Desktop\\demo\\web\\upload\\input_files\\"+str(img), img_path)
+    img_path = "C:\\Users\\shrid\\Desktop\\demo\\web\\upload\\input_files\\" + str(img)
+    png_path = img_path
+    output_folder = "C:\\Users\\shrid\\Desktop\\demo\\web\\upload\\output\\"
+    model_json_file = "C:\\Users\\shrid\\Desktop\\demo\\sketch-code\\model_output\\model_json.json"
+    model_weights_file = "C:\\Users\\shrid\\Desktop\\demo\\sketch-code\\model_output\\weights.h5"
+    style = "default"
+    print_generated_output = 1
+    print_bleu_score = 0
+    original_gui_filepath = None
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    sampler = Sampler(model_json_path=model_json_file,
+                      model_weights_path = model_weights_file)
+    html = sampler.convert_single_image(output_folder, png_path=png_path, print_generated_output=print_generated_output, get_sentence_bleu=print_bleu_score, original_gui_filepath=original_gui_filepath, style=style)
+    return html
+
+
+
+
+# import cv2
+# import numpy as np
+# import torch
+# import torchvision.transforms as transforms
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # sets device for model and PyTorch tensors
+# import torch.backends.cudnn as cudnn
+# cudnn.benchmark = True  # set to true only if inputs to model are fixed size; otherwise lot of computational overhead
+# import sys
+# import json
+# sys.path.append("../")
+# from code_generator_attention.inference.Compiler import *
+# from code_generator_attention.model import encoder, decoder
+
+# def initialize_model():
+#     with open('../code_generator_attention/notebook/line2idx.json', 'r') as f:
+#         line2idx = json.load(f)
+
+#     idx2line = {}
+#     for item in line2idx.keys():
+#         idx2line[line2idx[item]] = item
+
+#     encoder_model = encoder.Encoder(14)
+#     encoder_model.fine_tune(True)
+#     emb_dim = 256  # dimension of word embeddings
+#     attention_dim = 256  # dimension of attention linear layers
+#     decoder_dim = 256  # dimension of decoder RNN
+#     dropout = 0.5
+
+#     decoder_model = decoder.Decoder(attention_dim=attention_dim,
+#                                     embed_dim=emb_dim,
+#                                     decoder_dim=decoder_dim,
+#                                     vocab_size=len(line2idx),
+#                                     dropout=dropout)
+
+#     decoder_model = decoder_model.to(device)
+#     encoder_model = encoder_model.to(device)
+
+#     state_dict_encoder = torch.load('../code_generator_attention/result_dir/encoder_Jun09_2020_20.pt')
+#     encoder_model.load_state_dict(state_dict_encoder)
+
+#     state_dict_decoder = torch.load('../code_generator_attention/result_dir/decoder_Jun09_2020_20.pt')
+#     decoder_model.load_state_dict(state_dict_decoder)
+
+#     return encoder_model, decoder_model, line2idx, idx2line
+
+# def get_beam_search_result(batch,beam_size=3):
+#     """
+#     Perform validation of 1 batch input. This validation does not use teacher forcing.
+#     Thus the generation uses beam-search.
+#     each batch has strictly 1 sample (i.e. batch of 1)
+
+#     return the beam search result (one with highest probability), and accuracy
+#     """
+#     encoder_model, decoder_model, line2idx, idx2line = initialize_model()
+#     decoder_model.eval()  # eval mode (no dropout or batchnorm)
+#     encoder_model.eval()
+
+#     imgs = batch[0].unsqueeze(0)
+#     caps = batch[1].unsqueeze(0)
+#     caplens = batch[2].unsqueeze(0) #.unsqueeze(0)
+#     k = beam_size
+#     vocab_size = len(line2idx)
+#     references = list()  # references (true captions) for calculating BLEU-4 score
+#     hypotheses = list()  # hypotheses (predictions)
+#     with torch.no_grad():
+#         imgs = imgs.to(device)
+#         caps = caps.to(device)
+#         caplens = caplens.to(device)
+
+#         encoder_out = encoder_model(imgs)
+#         beam_search_seq = decoder_model.generate(encoder_out,line2idx,beam_size)
+
+#     allcaps = caps
+#     for j in range(allcaps.shape[0]):
+#         #print('j ',j)
+#         img_caps = allcaps[j].tolist()
+
+#         img_captions = []
+#         for w in img_caps:
+#             if w not in [line2idx['<PAD>']]:
+#             #if w not in [line2idx['<EOS>'],line2idx['<BOS>'], line2idx['<PAD>']]:
+#                 img_captions.append(w)
+#         references.append(img_captions)
+
+#     accuracy = np.sum(np.where(np.array(beam_search_seq) == np.array(references[0]),1,0))/len(references[0])
+
+#     return beam_search_seq,accuracy, idx2line
+
+# def translate_display_result(generated_result,rev_word_map):
+#   """
+#   print the HTML figure from the seq
+#   parameter: generated_result = list of integer index
+#   map it back to lines
+#   """
+#   rev_word_map[11] = '<START> '
+#   rev_word_map[12] = ' <END>'
+#   lines = []
+#   for i in generated_result:
+#     lines.append(rev_word_map[i])
+#   #print(lines)
+#   temp_compiler = Compiler('default')
+#   compiled_HTML = temp_compiler.compile(lines)
+#   del temp_compiler
+# #   display(HTML(compiled_HTML))
+#   return compiled_HTML
+
+# def generate_code(img):
+#     img_str = str(img)
+#     img = cv2.imdecode(np.frombuffer(img.read() , np.uint8), cv2.IMREAD_UNCHANGED)
+#     img= cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+#     transform = transforms.Compose([transforms.ToTensor()])
+#     img_tensor0 = transform(img)
+
+#     img_tensor1= torch.empty((47), dtype=torch.int64)
+#     img_tensor2= torch.empty((1), dtype=torch.int64)
+#     img_tuple=(img_tensor0, img_tensor1, img_tensor2)
+
+#     seq1, accu1, idx2line = get_beam_search_result(img_tuple)
+#     HTML0 = translate_display_result(seq1,idx2line)
+
+#     return HTML0
+#     # img_str = str(img)
+#     # img = cv2.imdecode(np.frombuffer(img.read() , np.uint8), cv2.IMREAD_UNCHANGED)
+#     # cv2.imwrite(img_str, img)
+#     # gui_file = img_str[:-4]+".gui"
+#     # f = open(gui_file, "w")
+#     # f.close()
+
+#     # net = Pix2Code()
+#     # net.load_state_dict(torch.load('../code_generator/pix2code.weights'))
+#     # net.cuda().eval()
+
+#     # test_data = UIDataset('./', '../code_generator/voc.pkl')
+#     # vocab = Vocabulary('../code_generator/voc.pkl')
+
+#     # print("*****", test_data.get_paths())
+
+#     # image, *_ = test_data.__getitem__(np.random.randint(len(test_data)))
+#     # t = transforms.ToPILImage()
+#     # image = image.unsqueeze(0)
+#     # t(image.squeeze())
+
+#     # image = image.cuda()
+#     # ct = []
+#     # ct.append(vocab.to_vec(' '))
+#     # ct.append(vocab.to_vec('<START>'))
+#     # output = ''
+#     # for i in range(200):
+#     #     context = torch.tensor(ct).unsqueeze(0).float().cuda()
+#     #     index = torch.argmax(net(image, context), 2).squeeze()[-1:].squeeze()
+#     #     v = vocab.to_vocab(int(index))
+#     #     if v == '<END>':
+#     #         break
+#     #     output += v
+#     #     ct.append(vocab.to_vec(v))
+
+#     # with open('../code_generator/compiler/output.gui', 'w') as f:
+#     #     f.write(output)
+
+#     # print(output)
+#     # print("chala!!")

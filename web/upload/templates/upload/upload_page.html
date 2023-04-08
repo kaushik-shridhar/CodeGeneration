@@ -1,0 +1,36 @@
+{% extends "./base.html" %} {% block content %}
+
+<h2>Generator</h2>
+<div class="">
+    <div class="row">
+        <div class="col-lg-4">
+            <form id="upload-file" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="imageUpload" class="upload-label">
+                    Choose...
+                </label>
+                <input type="file" name="file" id="imageUpload" accept=".png, .npz, .jpg, .jpeg">
+            </form>
+            <div class="image-section" style="display:none;">
+                <div>
+                    <button type="button" class="btn btn-primary btn-lg " id="btn-predict">Predict!</button>
+                </div>
+                <div class="img-preview">
+                    <div id="imagePreview">
+                    </div>
+                </div>
+            </div>
+            <div class="loader" style="display:none;"></div>
+        </div>
+        <div class="col-lg-8">
+            <textarea id="textarea" cols="100" rows="20"></textarea>
+            <br>
+            <button type="button" id="btn-copy" class="upload-label" style="border: none">Copy</button>
+            <button type="button" id="btn-export" class="upload-label" style="border: none">Export as HTML</button>
+            <code id="result">
+                <span> </span>
+            </code>
+        </div>
+    </div>
+</div>
+{% endblock %}
