@@ -7,3 +7,5 @@ The model is served through a Flask-based web interface, allowing users to uploa
 ## 🎥 Demo
 
 <video src="https://github.com/kaushik-shridhar/CodeGeneration/blob/main/bandicam%202023-04-08%2002-32-28-650.mp4?raw=true" controls width="700"></video>
+<video controls width="700" src="https://raw.githubusercontent.com/kaushik-shridhar/CodeGeneration/main/bandicam%202023-04-08%2002-32-28-650.mp4"></video>
+
